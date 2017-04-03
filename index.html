@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cesium HTML Billboards</title>
+    <script src="lib/Cesium/Cesium.js"></script>
+    <script src="HtmlBillboard.js"></script>
+    <script src="HtmlBillboardCollection.js"></script>
+    <style>
+        @import url(lib/Cesium/Widgets/widgets.css);
+        html, body, #cesiumContainer {
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="cesiumContainer"></div>
+    <script>
+
+        var viewer = new Cesium.Viewer('cesiumContainer');
+        var htmlLayer = new HtmlBillboardCollection(viewer.scene);
+        
+        function demoEntityAlignment() {
+            // Position
+            var lat = 40.03883;
+            var lon = -75.59777;
+            var alt = 500;
+
+            // Create an entity
+            var entity = viewer.entities.add({
+                position : Cesium.Cartesian3.fromDegrees(lat, lon, alt),
+                point : {
+                    pixelSize : 12,
+                    color : Cesium.Color.YELLOW
+                }
+            });
+            
+            // Create a an HTML billboard to go along with the entity.
+            var ch = htmlLayer.add();
+            ch.position = Cesium.Cartesian3.fromDegrees(lat, lon, alt);
+
+            // The top-left corner of the element is the location of the element's 'position'.
+            // In order to center the element, use a negative left offset.
+            ch.offsetLeft = -30;
+            ch.offsetTop = 6;
+
+            ch.element.style.width = '60px';
+            ch.element.style.height = '60px';
+            ch.element.style.background = 'red';
+
+            // Note that the HTML takes clicks that would normally pass through to Cesium.
+            ch.element.innerHTML = 
+                "<div style='text-align: center'> " + 
+                    "<button onclick='alert(\"Got click\")'>Action</button>" +
+                "</div>";
+
+            setInterval(function (){
+                // Update position
+                lon = (lon + 0.001) % 180;
+                var pos = Cesium.Cartesian3.fromDegrees(lon, lat, alt);
+                entity.position = pos;
+                ch.position = pos;
+            }, 200);
+        }
+
+        function demoMultipleBillboards(){
+            // Position
+            var lat, lon;
+
+            for (lat = -80; lat < 80; lat += 5) {
+                for (lon = -180; lon < 180; lon += 5) {
+                    var ch = htmlLayer.add();
+                    ch.position = Cesium.Cartesian3.fromDegrees(lon, lat);
+                    ch.offsetLeft = -15;
+                    ch.offsetTop = 10;
+
+                    ch.element.style.width = '30px';
+                    ch.element.style.height = '20px';
+
+                    ch.element.style.background = 'transparent';
+                    ch.element.style.fontSize = '6pt';
+                    ch.element.style.color= 'white';
+                    ch.element.innerHTML = lat + "," + lon; 
+
+                    // Keep the HTML element from catching mouse events.
+                    ch.element.style.pointerEvents = 'none';
+                }
+            }
+        }
+
+        demoEntityAlignment();
+        demoMultipleBillboards();
+
+    </script>
+</body>
+</html>
